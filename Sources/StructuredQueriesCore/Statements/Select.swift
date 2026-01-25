@@ -314,7 +314,7 @@ public struct _SelectClauses: Sendable {
 /// `Select` type, like `select`, `join`, `group(by:)`, `order(by:)`, and more.
 ///
 /// To learn more, see <doc:SelectStatements>.
-#if compiler(>=6.1)
+#if compiler(>=6.1) && compiler(<6.2)
   @dynamicMemberLookup
 #endif
 public struct Select<Columns, From: Table, Joins>: Sendable {
@@ -400,7 +400,7 @@ extension Select {
     self.where = `where`
   }
 
-  #if DEBUG && compiler(>=6.1)
+  #if DEBUG && compiler(>=6.1) && compiler(<6.2)
     // NB: This can cause 'EXC_BAD_ACCESS' when 'C2' or 'J2' contain parameters.
     // TODO: Report issue to Swift team.
     @available(
@@ -1395,7 +1395,7 @@ extension Select {
   public func group<C: QueryExpression>(
     by grouping: (From.TableColumns, Joins.TableColumns) -> C
   ) -> Self where Joins: Table {
-    _group(by: grouping)
+    _groupJoined(by: grouping)
   }
 
   /// Creates a new select statement from this one by appending the given columns to its `GROUP BY`
@@ -1410,7 +1410,7 @@ extension Select {
   >(
     by grouping: (From.TableColumns, Joins.TableColumns) -> (C1, C2, repeat each C3)
   ) -> Self where Joins: Table {
-    _group(by: grouping)
+    _groupJoined(by: grouping)
   }
 
   private func _group<
@@ -1427,7 +1427,7 @@ extension Select {
     return select
   }
 
-  private func _group<each C: QueryExpression>(
+  private func _groupJoined<each C: QueryExpression>(
     by grouping: (From.TableColumns, Joins.TableColumns) -> (repeat each C)
   ) -> Self where Joins: Table {
     var select = self

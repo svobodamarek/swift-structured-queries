@@ -52,7 +52,9 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.8.1"),
+    // Forks with Android cross-compilation fixes (combine-schedulers trait issue)
+    .package(url: "https://github.com/svobodamarek/combine-schedulers", branch: "main"),
+    .package(url: "https://github.com/svobodamarek/swift-dependencies", branch: "main"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.3"),
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.4"),
     .package(url: "https://github.com/pointfreeco/swift-tagged", from: "0.10.0"),

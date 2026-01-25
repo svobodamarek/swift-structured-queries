@@ -53,7 +53,7 @@ extension Table {
 /// A `WHERE` clause used to apply a filter to a statement.
 ///
 /// See ``Table/where(_:)`` for how to create this type.
-#if compiler(>=6.1)
+#if compiler(>=6.1) && compiler(<6.2)
   @dynamicMemberLookup
 #endif
 public struct Where<From: Table>: Sendable {
@@ -69,7 +69,7 @@ public struct Where<From: Table>: Sendable {
     self.scope = scope
   }
 
-  #if compiler(>=6.1)
+  #if compiler(>=6.1) && compiler(<6.2)
     public static subscript(dynamicMember keyPath: KeyPath<From.Type, Self>) -> Self {
       From.self[keyPath: keyPath]
     }

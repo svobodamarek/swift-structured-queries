@@ -1,4 +1,4 @@
-#if compiler(>=6.1)
+#if compiler(>=6.1) && compiler(<6.2)
   // NB: Using a parameter pack in the dynamic member results in 'EXC_BAD_ACCESS'.
   //     These overloads work around the problem.
   extension Select {

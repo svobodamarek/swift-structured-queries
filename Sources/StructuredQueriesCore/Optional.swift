@@ -172,12 +172,14 @@ extension Optional: Table, PartialSelectStatement, Statement where Wrapped: Tabl
       Member?.some(Wrapped.columns[keyPath: keyPath])
     }
 
-    @_disfavoredOverload
-    public subscript<QueryValue>(
-      dynamicMember keyPath: KeyPath<Wrapped.TableColumns, some QueryExpression<QueryValue?>>
-    ) -> some QueryExpression<QueryValue?> {
-      Wrapped.columns[keyPath: keyPath]
-    }
+    #if compiler(<6.2)
+      @_disfavoredOverload
+      public subscript<QueryValue>(
+        dynamicMember keyPath: KeyPath<Wrapped.TableColumns, some QueryExpression<QueryValue?>>
+      ) -> some QueryExpression<QueryValue?> {
+        Wrapped.columns[keyPath: keyPath]
+      }
+    #endif
   }
 
   public typealias Selection = Wrapped.Selection?

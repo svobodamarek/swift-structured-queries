@@ -13,6 +13,13 @@ where TableColumns: PrimaryKeyedTableDefinition<PrimaryKey> {
   associatedtype Draft: TableDraft where Draft.PrimaryTable == Self
 }
 
+@inline(__always)
+private func _primaryKeyColumn<T: PrimaryKeyedTable>(
+  _ type: T.Type
+) -> T.TableColumns.PrimaryColumn {
+  type.columns.primaryKey
+}
+
 // A type representing a draft to be saved to a table with a primary key.
 public protocol TableDraft: Table {
   /// A type that represents the table with a primary key.
@@ -25,17 +32,19 @@ public protocol TableDraft: Table {
 }
 
 extension TableDraft {
-  public static subscript(
-    dynamicMember keyPath: KeyPath<PrimaryTable.Type, some Statement<PrimaryTable>>
-  ) -> some Statement<Self> {
-    SQLQueryExpression("\(PrimaryTable.self[keyPath: keyPath])")
-  }
+  #if compiler(<6.2)
+    public static subscript(
+      dynamicMember keyPath: KeyPath<PrimaryTable.Type, some Statement<PrimaryTable>>
+    ) -> some Statement<Self> {
+      SQLQueryExpression("\(PrimaryTable.self[keyPath: keyPath])")
+    }
 
-  public static subscript(
-    dynamicMember keyPath: KeyPath<PrimaryTable.Type, some SelectStatementOf<PrimaryTable>>
-  ) -> SelectOf<Self> {
-    unsafeBitCast(PrimaryTable.self[keyPath: keyPath].asSelect(), to: SelectOf<Self>.self)
-  }
+    public static subscript(
+      dynamicMember keyPath: KeyPath<PrimaryTable.Type, some SelectStatementOf<PrimaryTable>>
+    ) -> SelectOf<Self> {
+      unsafeBitCast(PrimaryTable.self[keyPath: keyPath].asSelect(), to: SelectOf<Self>.self)
+    }
+  #endif
 
   public static var all: SelectOf<Self> {
     unsafeBitCast(PrimaryTable.all.asSelect(), to: SelectOf<Self>.self)
@@ -61,11 +70,13 @@ where QueryValue: PrimaryKeyedTable {
 }
 
 extension TableDefinition where QueryValue: TableDraft {
-  public subscript<Member>(
-    dynamicMember keyPath: KeyPath<QueryValue.PrimaryTable.TableColumns, Member>
-  ) -> Member {
-    QueryValue.PrimaryTable.columns[keyPath: keyPath]
-  }
+  #if compiler(<6.2)
+    public subscript<Member>(
+      dynamicMember keyPath: KeyPath<QueryValue.PrimaryTable.TableColumns, Member>
+    ) -> Member {
+      QueryValue.PrimaryTable.columns[keyPath: keyPath]
+    }
+  #endif
 }
 
 extension PrimaryKeyedTableDefinition where PrimaryColumn: TableColumnExpression {
@@ -102,7 +113,8 @@ extension PrimaryKeyedTable {
   public static func find(
     _ primaryKeys: some Sequence<some QueryExpression<PrimaryKey>>
   ) -> Where<Self> {
-    Self.where { $0.primaryKey.in(primaryKeys) }
+    let primaryKey = _primaryKeyColumn(Self.self)
+    return Where(predicates: [primaryKey.in(primaryKeys).queryFragment])
   }
 
   public var primaryKey: PrimaryKey.QueryOutput {
@@ -128,7 +140,8 @@ extension TableDraft {
   public static func find(
     _ primaryKeys: some Sequence<some QueryExpression<PrimaryKey>>
   ) -> Where<Self> {
-    Self.where { $0.primaryKey.in(primaryKeys) }
+    let primaryKey = _primaryKeyColumn(PrimaryTable.self)
+    return Where(predicates: [primaryKey.in(primaryKeys).queryFragment])
   }
 }
 
@@ -148,7 +161,10 @@ extension Where where From: PrimaryKeyedTable {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    Self.where { $0.primaryKey.in(primaryKeys) }
+    var updated = self
+    let primaryKey = _primaryKeyColumn(From.self)
+    updated.predicates.append(primaryKey.in(primaryKeys).queryFragment)
+    return updated
   }
 }
 
@@ -170,7 +186,10 @@ extension Where where From: TableDraft {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    Self.where { $0.primaryKey.in(primaryKeys) }
+    var updated = self
+    let primaryKey = _primaryKeyColumn(From.PrimaryTable.self)
+    updated.predicates.append(primaryKey.in(primaryKeys).queryFragment)
+    return updated
   }
 }
 
@@ -232,7 +251,10 @@ extension Update where From: PrimaryKeyedTable {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    self.where { $0.primaryKey.in(primaryKeys) }
+    var update = self
+    let primaryKey = _primaryKeyColumn(From.self)
+    update.where.append(primaryKey.in(primaryKeys).queryFragment)
+    return update
   }
 }
 
@@ -254,7 +276,10 @@ extension Update where From: TableDraft {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    self.where { $0.primaryKey.in(primaryKeys) }
+    var update = self
+    let primaryKey = _primaryKeyColumn(From.PrimaryTable.self)
+    update.where.append(primaryKey.in(primaryKeys).queryFragment)
+    return update
   }
 }
 
@@ -274,7 +299,10 @@ extension Delete where From: PrimaryKeyedTable {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    self.where { $0.primaryKey.in(primaryKeys) }
+    var delete = self
+    let primaryKey = _primaryKeyColumn(From.self)
+    delete.where.append(primaryKey.in(primaryKeys).queryFragment)
+    return delete
   }
 }
 
@@ -296,6 +324,9 @@ extension Delete where From: TableDraft {
   public func find(
     _ primaryKeys: some Sequence<some QueryExpression<From.PrimaryKey>>
   ) -> Self {
-    self.where { $0.primaryKey.in(primaryKeys) }
+    var delete = self
+    let primaryKey = _primaryKeyColumn(From.PrimaryTable.self)
+    delete.where.append(primaryKey.in(primaryKeys).queryFragment)
+    return delete
   }
 }
