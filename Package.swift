@@ -56,10 +56,10 @@ let package = Package(
     .package(url: "https://github.com/svobodamarek/combine-schedulers", branch: "main"),
     .package(url: "https://github.com/svobodamarek/swift-dependencies", branch: "main"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.3"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.4"),
+    .package(url: "https://github.com/svobodamarek/swift-snapshot-testing", from: "1.18.4"),
     .package(url: "https://github.com/pointfreeco/swift-tagged", from: "0.10.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.5.2"),
-    .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"603.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"604.0.0"),
   ],
   targets: [
     .target(
