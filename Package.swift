@@ -90,6 +90,8 @@ let package = Package(
       name: "StructuredQueriesMacros",
       dependencies: [
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+        .product(name: "SwiftSyntax", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
       ],
       exclude: ["Symbolic Links/README.md"]
@@ -114,6 +116,8 @@ let package = Package(
       name: "StructuredQueriesSQLiteMacros",
       dependencies: [
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+        .product(name: "SwiftSyntax", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
       ]
     ),
